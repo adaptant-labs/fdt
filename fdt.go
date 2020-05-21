@@ -246,6 +246,22 @@ func (t *Tree) MatchNode(nodeName string, f func(n *Node)) {
 	t.RootNode.matchNode(nodeName, f)
 }
 
+func (n *Node) eachNodeRegexp(pattern *regexp.Regexp, f func(n *Node)) {
+	if pattern.MatchString(n.Name) {
+		f(n)
+	}
+
+	for _, c := range n.Children {
+		c.eachNodeRegexp(pattern, f)
+	}
+}
+
+// As above but matching node name as a regexp.
+func (t *Tree) EachNodeMatching(pattern string, f func(n *Node)) {
+	re := regexp.MustCompile(pattern)
+	t.RootNode.eachNodeRegexp(re, f)
+}
+
 // Find node of given name "nodeName"
 func (n *Node) getNode(nodeName string) *Node {
 	if n.Name == nodeName {
@@ -276,7 +292,7 @@ func (t *Tree) EachNodeFrom(nodeName string, f func(n *Node)) {
 	}
 }
 
-func (n *Node) eachRegexp(pattern *regexp.Regexp, f func(n *Node)) {
+func (n *Node) eachPropertyRegexp(pattern *regexp.Regexp, f func(n *Node)) {
 	for name := range n.Properties {
 		if pattern.MatchString(name) {
 			f(n)
@@ -284,14 +300,14 @@ func (n *Node) eachRegexp(pattern *regexp.Regexp, f func(n *Node)) {
 		}
 	}
 	for _, c := range n.Children {
-		c.eachRegexp(pattern, f)
+		c.eachPropertyRegexp(pattern, f)
 	}
 }
 
-// As abote but matching property name as a regexp.
+// As above but matching property name as a regexp.
 func (t *Tree) EachPropertyMatching(pattern string, f func(n *Node)) {
 	re := regexp.MustCompile(pattern)
-	t.RootNode.eachRegexp(re, f)
+	t.RootNode.eachPropertyRegexp(re, f)
 }
 
 // Parses property value as 32 bit integer.
